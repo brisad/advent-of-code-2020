@@ -1,0 +1,49 @@
+* Advent of Code 2020
+
+Run all solutions with =make=:
+#+BEGIN_SRC bash
+$ make
+runhaskell day1.hs < day1.input
+Part one: [658899]
+Part two: [155806250]
+[...]
+#+END_SRC
+
+** Commentary
+*** Day 1
+I'd like to get some practice using parser combinators, more
+specifically with the built in implementation
+=Text.ParserCombinators.ReadP=. That's why I also use it for very
+simple input, like this day's list of numbers.
+
+I have an utility function which attempts to parse the full input.
+#+BEGIN_SRC haskell
+readNumbers :: String -> [Int]
+readNumbers s = case [x | (x, "") <- readP_to_S numbers s] of
+  [x] -> x
+  _   -> []
+#+END_SRC
+For simplicity, it just returns the empty list if there's any
+unexpected input. But we shouldn't get any run-time errors.
+
+The challenging part of this day's problem is how to generate all
+possible pairs and triplets of numbers. This can probably be easily
+achieved with a library, with the benefit of good performance.
+
+But here, for the challenge of it, I solved it using recursion and
+normal Haskell lists. I think it is alright, but there is probably an
+even more expressive way to do it. Also, the use of concatenation must
+be terrible for performance, but I've decided to ignore that and try
+to focus more on the readability.
+#+BEGIN_SRC haskell
+pairs :: [a] -> [(a, a)]
+pairs []     = []
+pairs (_:[]) = []
+pairs (x:xs) = map ((,)x) xs ++ pairs xs
+
+triplets :: [a] -> [(a, a, a)]
+triplets []       = []
+triplets (_:[])   = []
+triplets (_:_:[]) = []
+triplets (x:xs)   = map (\(a, b) -> (x, a, b)) (pairs xs) ++ triplets xs
+#+END_SRC
