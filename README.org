@@ -47,3 +47,37 @@ triplets (_:[])   = []
 triplets (_:_:[]) = []
 triplets (x:xs)   = map (\(a, b) -> (x, a, b)) (pairs xs) ++ triplets xs
 #+END_SRC
+
+*** Day 2
+It was more fun to write the parser for this day's input format since
+it had a bit of structure. I generalized the =readNumbers= function
+from yesterday so that I could use the same approach
+#+BEGIN_SRC haskell
+parseWith :: Monoid a => ReadP a -> String -> a
+parseWith p s = case [x | (x, "") <- readP_to_S p s] of
+  [x] -> x
+  _   -> mempty
+#+END_SRC
+and then I wrote some small, nice parsing functions. For example:
+#+BEGIN_SRC haskell
+policy :: ReadP Policy
+policy = do
+  m <- nat
+  _ <- char '-'
+  n <- nat
+  _ <- char ' '
+  c <- get
+  return (Policy m n c)
+#+END_SRC
+
+I realize I don't actually focus on readability. I'm trying to make
+short, expressive functions, which makes readability suffer. See this
+function for instance:
+#+BEGIN_SRC haskell
+check' :: Policy -> Password -> Bool
+check' (Policy m n c) password = fromMaybe False $ pure (/=) <*> at m <*> at n
+  where at = fmap (== c) . safeGet password
+#+END_SRC
+But I like it. It's fun to tweak and refine. This way I get practice,
+and in the future I'll hopefully learn how to strike the balance
+between readability and expressiveness.
