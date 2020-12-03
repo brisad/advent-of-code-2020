@@ -81,3 +81,26 @@ check' (Policy m n c) password = fromMaybe False $ pure (/=) <*> at m <*> at n
 But I like it. It's fun to tweak and refine. This way I get practice,
 and in the future I'll hopefully learn how to strike the balance
 between readability and expressiveness.
+
+*** Day 3
+More parsing fun! This time a two-dimensional map, which was pretty
+cool as the result was an infinite structure. This is the parser in
+its entirety:
+#+BEGIN_SRC haskell
+pmap :: ReadP Map
+pmap = endBy row (char '\n')
+
+row :: ReadP [Int]
+row = cycle <$> many (open +++ tree)
+  where open = const 0 <$> char '.'
+        tree = const 1 <$> char '#'
+#+END_SRC
+(=pmap= is named so in order to not conflict with the built in =map=
+function). Since the map extends infinitely to the right, we can use
+the power of Haskell's lazy lists and just =fmap= a =cycle= onto the
+parsed row. Combining this infinite row in =pmap= was no problem at
+all! I used =<$>= instead of =fmap= for variation, and it let me get
+rid of some parentheses.
+
+I realize I would have saved a lot more space if I didn't use =cycle=
+and instead use modular arithmetic. But still, I enjoyed this variant.
